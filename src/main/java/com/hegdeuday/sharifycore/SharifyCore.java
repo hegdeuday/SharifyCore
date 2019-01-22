@@ -1,13 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.hegdeuday.sharifycore;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
 
 /**
  *
@@ -39,9 +36,10 @@ public final class SharifyCore implements Constants{
                 Socket socket=server.accept();
                 final SocketHandler handler=new SocketHandler(notifier,threadHandler);
                 verified=handler.verifyClient(socket);
-                if(verified){
+                if(verified){ 
                     threadHandler.add(new ThreadHandler.InfiniteThread(()->handler.beginListener()), ThreadHandler.MSG_LISTENER, "msgListener");
                     threadHandler.add(new ThreadHandler.InfiniteThread(), ThreadHandler.MSG_SENDER, "msgSender");
+                    addController(handler);
                 }else{notifier.onThirdPartyAccess(socket.getInetAddress(),socket.getPort());socket.close();}
             }while(!verified || notifier.multipleClients());
         }catch(IOException ex) {notifier.onException(ex,excpt.ERR_SERVER_BIND);}
@@ -53,12 +51,27 @@ public final class SharifyCore implements Constants{
             if(handler.verifyServer(socket)){
                 threadHandler.add(new ThreadHandler.InfiniteThread(()->handler.beginListener()), ThreadHandler.MSG_LISTENER, "msgListener");
                 threadHandler.add(new ThreadHandler.InfiniteThread(), ThreadHandler.MSG_SENDER, "msgSender");
+                addController(handler);
             }
         }catch(IOException ex){notifier.onException(ex,excpt.ERR_CLIENT_CONNECT);}
     }
     
-    public static void main(String[] args) {
-        
+    private void addController(final SocketHandler handler){
+        notifier.addController(new Controller(){
+                        @Override
+                        public void send(File[] files, File root) {
+                            handler.send(files, root);
+                        }
+
+                        @Override
+                        public void send(URL url) {
+                            handler.send(url);
+                        }
+
+                        @Override
+                        public void send(String msg) {
+                            handler.send(msg);
+                        }
+                    });
     }
-    
 }

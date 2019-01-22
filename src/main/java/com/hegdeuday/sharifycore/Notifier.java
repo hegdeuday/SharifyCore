@@ -1,25 +1,36 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.hegdeuday.sharifycore;
 
 import com.hegdeuday.sharifycore.holders.ProgressProp;
 import java.io.File;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author hegdeuday
  */
-public interface Notifier {
-    public void onConnected();
-    public void onException(Exception ex,int ERR_NO);
-    public boolean multipleClients();
-    public void onThirdPartyAccess(InetAddress addr,int port);
-    public boolean onVerified();
-    public File onIncomming(int fileCount,long length);
-    public void onProgress(ProgressProp prop);
-    public InetAddress getServerAddress();
+public abstract class Notifier {
+    
+    private List<Controller> controllers;
+    public Notifier(){
+       controllers=new ArrayList<Controller>();
+    }
+    
+    void addController(Controller controller){
+        controllers.add(controller);
+    }
+    
+    public List<Controller> getControllers(){
+        return controllers;
+    }
+    
+    public abstract void onConnected();
+    public abstract void onException(Exception ex,int ERR_NO);
+    public abstract boolean multipleClients();
+    public abstract void onThirdPartyAccess(InetAddress addr,int port);
+    public abstract boolean onVerified();
+    public abstract File onIncomming(int fileCount,long length);
+    public abstract void onProgress(ProgressProp prop);
+    public abstract InetAddress getServerAddress();
 }
